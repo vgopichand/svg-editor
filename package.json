@@ -12,6 +12,7 @@
     "react-dom": "^18.2.0",
     "react-plotly.js": "^2.6.0",
     "react-scripts": "5.0.1",
+    "react-tooltip": "^4.2.21",
     "styled-components": "^5.3.5",
     "underscore": "^1.13.4",
     "web-vitals": "^2.1.4"

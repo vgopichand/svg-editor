@@ -36,7 +36,9 @@ export const layout = {
     roworder: 'bottom to top',
   },
   width: 740,
-  height: 380
+  height: 380,
+  'xaxis.autorange': false,
+  'yaxis.autorange': false
 };
 
 export const data = [
