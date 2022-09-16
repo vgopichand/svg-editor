@@ -37,6 +37,7 @@ function addAlertToAlertGroup(alert, alertGroup, onHovercallBack) {
   svgImg.style.pointerEvents = 'auto'
   svgImg.style.outline = 'none'
   svgImg.addEventListener('mouseover', (event) => onHovercallBack && onHovercallBack(event.target.getAttribute('alertId')))
+  svgImg.addEventListener('click', (event) => event.target.blur())
   alertGroup.appendChild(svgImg)
 
   return svgImg

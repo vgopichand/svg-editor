@@ -1,10 +1,11 @@
 import ReactTooltip from "react-tooltip";
 import AlertTooltip from "./AlertTooltip";
 
-const DataTooltip = () => {
+const DataTooltip = ({ alert }) => {
+  const id = alert.id + '_' + alert.status;
   return (
-    <ReactTooltip id="alert-id" place="top" effect="solid">
-      <AlertTooltip />
+    <ReactTooltip id={id} place="top" effect="solid">
+      <AlertTooltip alert={alert} />
     </ReactTooltip>
   )
 }
