@@ -21,14 +21,24 @@ const AlertsImagePaths = {
 
 const alerts = convertToLocalTime(rawAlerts)
 
-// console.log(_.map(alerts, r => r.occurredAt));
-
+const getSeverity = (alert) => {
+  switch(alert.severity){
+    case 'critical':
+      return 0
+    case 'major':
+      return alert.code.includes('NDA') ? 2 : 1
+    default:
+      return alert.code.includes('NDA') ? 4 : 3
+  }
+}
 const plotly_alerts = _.map(alerts, alert => {
+  alert.dataId = (alert.id + '_' + alert.status)
+  alert.imagePath = AlertsImagePaths[alert.status === 'cleared'? (alert.severity + '_clear') : alert.severity]
   return {
      id: (alert.id + '_' + alert.status),
-     imagePath: AlertsImagePaths[alert.status === 'cleared'? (alert.severity + '_clear') : alert.severity],
+     imagePath: alert.imagePath,
      occurredAt: alert.occurredAt,
-     timeZone: alert.timeZone
+     severity: getSeverity(alert)
     }
   })
 
@@ -48,10 +58,8 @@ const Chart = () => {
   }
 
   return (<>
-    <Plot divId={CHART_DIV_ID} data={data} layout={layout} config={{ displaylogo: false, autosizable: false, modeBarButtonsToRemove: ['autoScale2d', 'pan2d', 'zoom3d', 'zoomIn2d', 'zoomOut2d'] }} onInitialized={(a, b) => renderPlotly(a, b)} onRelayout={onRelayout} />
-    {
-      alerts.map( r => <DataTooltip key={r.id + '_' + r.status} alert={r} />)
-    }
+    <Plot divId={CHART_DIV_ID} data={data} layout={layout} config={{ scrollZoom: true, displaylogo: false, autosizable: false, modeBarButtonsToRemove: ['autoScale2d', 'pan2d', 'zoom3d', 'zoomIn2d', 'zoomOut2d'] }} onInitialized={(a, b) => renderPlotly(a, b)} onRelayout={onRelayout} />
+    <DataTooltip alerts={alerts} />
   </>)
 }
 

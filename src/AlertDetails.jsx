@@ -31,6 +31,7 @@ const S = {
   UnorderedList: styled.ul`
     ${({ isSingleList }) => {
         return isSingleList && css`
+        display: flex;
         margin: 0px;
         list-style-type: none;
       `
@@ -38,6 +39,7 @@ const S = {
     }
   `,
   Heading: styled.h4`
-    margin: 0px
+    margin: 0px;
+    display: flex;
   `
 }

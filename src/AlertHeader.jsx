@@ -12,7 +12,7 @@ const AlertHeader = ({ alert }) => {
   return (
     <>
       <S.Header>
-        <AlertIcon {...{ severity }} size={'large'} />
+        <AlertIcon imagePath={alert.imagePath} {...{ severity }} size={'large'} />
         <S.Wrapper>
           <S.Description>{description}</S.Description>
           <S.Code>{code}</S.Code>
@@ -52,6 +52,7 @@ const S = {
     word-wrap: break-word;
   `,
   Code: styled.span`
+    display: flex;
     color: '#939598';
     font-size: 18px;
   `,

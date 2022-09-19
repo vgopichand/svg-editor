@@ -1,11 +1,9 @@
 import React from 'react'
 import styled from 'styled-components'
-import critical from './critical.svg'
 
-
-function AlertIcon ({ size }) {
+function AlertIcon ({ imagePath, size }) {
   return (
-    <S.AlertIcon src={critical} alt='alert-icon' { ...size } />
+    <S.AlertIcon src={imagePath} alt='alert-icon' { ...size } />
   )
 }
 
