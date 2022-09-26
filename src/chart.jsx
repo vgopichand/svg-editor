@@ -4,13 +4,15 @@ import normal from './normal.png'
 import normal_clear from './normal_clear.png'
 import _ from 'underscore'
 
-
 import Plot from 'react-plotly.js'
 
-import { layout, data, rawAlerts, convertToLocalTime } from './chartData'
 import { addOrUpdateAlerts } from './chartHelper'
 import DataTooltip from './Tooltip'
 import ReactTooltip from 'react-tooltip'
+import { RthRawData1 } from './Data/RthData.js'
+import { getPlotlyDataAndLayout } from './Data/RthRawDataConverter'
+
+const { data, alerts, layout } = getPlotlyDataAndLayout(RthRawData1)
 
 const CHART_DIV_ID = 'rth-chart'
 const AlertsImagePaths = {
@@ -18,8 +20,6 @@ const AlertsImagePaths = {
   normal: normal,
   normal_clear: normal_clear
 }
-
-const alerts = convertToLocalTime(rawAlerts)
 
 const getSeverity = (alert) => {
   switch(alert.severity){
@@ -37,7 +37,7 @@ const plotly_alerts = _.map(alerts, alert => {
   return {
      id: (alert.id + '_' + alert.status),
      imagePath: alert.imagePath,
-     occurredAt: alert.occurredAt,
+     occurredAt: alert.occurredAtLocal,
      severity: getSeverity(alert)
     }
   })
@@ -58,7 +58,13 @@ const Chart = () => {
   }
 
   return (<>
-    <Plot divId={CHART_DIV_ID} data={data} layout={layout} config={{ scrollZoom: true, displaylogo: false, autosizable: false, modeBarButtonsToRemove: ['autoScale2d', 'pan2d', 'zoom3d', 'zoomIn2d', 'zoomOut2d'] }} onInitialized={(a, b) => renderPlotly(a, b)} onRelayout={onRelayout} />
+    <Plot
+      divId={CHART_DIV_ID}
+      data={data} layout={layout}
+      config={{ scrollZoom: true, displaylogo: false, autosizable: false, modeBarButtonsToRemove: ['autoScale2d', 'pan2d', 'zoom3d', 'zoomIn2d', 'zoomOut2d'] }}
+      onInitialized={(a, b) => renderPlotly(a, b)}
+      onRelayout={onRelayout}
+     />
     <DataTooltip alerts={alerts} />
   </>)
 }

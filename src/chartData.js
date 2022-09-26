@@ -13,7 +13,7 @@ export const layout = {
   },
   yaxis: {
     side: 'left',
-    title: '°F | %',
+    title: '%',
     anchor: 'x1',
     range: [0, 100],
     domain: [0, 0.4],
@@ -21,6 +21,13 @@ export const layout = {
   },
   yaxis2: {
     side: 'left',
+    domain: [0.48, 1],
+    range: [0],
+    anchor: 'x1',
+    fixedrange: true
+  },
+  yaxis3: {
+    side: 'right',
     domain: [0.48, 1],
     range: [0],
     anchor: 'x1',
@@ -56,6 +63,7 @@ export const data = [
     line: {},
     fill: "",
     marker: {},
+    hoverinfo: 'none',
     x: [
       "2022-09-13T00:00:00-05:00",
       "2022-09-13T00:21:39-05:00",
@@ -597,6 +605,7 @@ export const data = [
     mode: "lines",
     line: {},
     fill: "",
+    hoverinfo: 'none',
     marker: {},
     x: [
       "2022-09-13T00:00:00-05:00",
