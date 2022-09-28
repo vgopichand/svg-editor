@@ -1,7 +1,10 @@
 import moment from "moment";
-import 'moment-timezone'
+import 'moment-timezone';
+import _ from 'underscore';
+import { getUpdatedLayoutWithRange } from './y2AndY3Scale'
 
 import { Parameters, Stages, Zone } from "./ParametersMap"
+import SuperheatInterpolator from "./superheatInterpolator";
 
 export const getPlotlyDataAndLayout = (rawData) => {
   const parametersData = getParametersData(rawData)
@@ -9,8 +12,10 @@ export const getPlotlyDataAndLayout = (rawData) => {
   const zonesData = getZonesData(rawData, parametersData.length)
   const stagesData = getStagesData(rawData, parametersData.length + zonesData.length)
   const alerts = getAlertsData(rawData)
+
+  const updatedBaseLayout = getUpdatedLayoutWithRange(parametersData.concat(zonesData), baseLayout)
   const layout = {
-    ...baseLayout,
+    ...updatedBaseLayout,
     xaxis: {
       ...baseLayout.xaxis,
       range: [
@@ -31,14 +36,17 @@ const getParametersData = (rawData) => {
     const lineNumber = Parameters.indexOf(r)
     const x = []
     const y = []
-    rawData[r.name].forEach(s => {
-      if(s[parameterName] !== null) {
-        x.push(parseTimeZone(s.occurredAt, rawData.timeZone))
-        y.push(s[parameterName])
-      }
-    })
-
-    const data =  plotlyData(dispName, x, y, yaxis, lineNumber)
+    if (r.name === 'gasSuperheatOccurrences') {
+      parseGasSuperheatOccurrences(rawData[r.name], rawData.stages, rawData.fromTime, rawData.toTime, rawData.timeZone, x, y)
+    } else {
+      rawData[r.name].forEach(s => {
+        if(s[parameterName] !== null) {
+          x.push(parseTimeZone(s.occurredAt, rawData.timeZone))
+          y.push(s[parameterName])
+        }
+      })
+    }
+    const data =  plotlyData(dispName, x, y, yaxis, lineNumber, r.legendgroup, r.mode, r.connectgaps)
     if (r.line){
       return { ...data, line: r.line}
     } else {
@@ -48,7 +56,7 @@ const getParametersData = (rawData) => {
 }
 
 const getZonesData = (rawData, linesCount) => {
-  const zonesData = rawData.zones.map(z => {
+  const zonesData = rawData.zones.map((z, index) => {
     return Zone.map(r => {
       const dispName = r.dispName
       const parameterName = r.parameterName
@@ -57,15 +65,17 @@ const getZonesData = (rawData, linesCount) => {
       const x = []
       const y = []
       z[r.name].forEach(s => {
-        if(s[parameterName] !== null) {
+        if (r.name === 'relievingOccurrences') {
+          processRelievingOccurrences(s, z, rawData.timeZone, x, y)
+        } else if(s[parameterName] !== null) {
           x.push(parseTimeZone(s.occurredAt, rawData.timeZone))
           y.push(s[parameterName])
         }
       })
 
-      const data = plotlyData(dispName, x, y, yaxis, linesCount)
+      const data = plotlyData(dispName, x, y, yaxis, linesCount, z.name, r.mode)
       if (r.line) {
-        return { ...data, line: r.line, fill: (r.fill || 'none')}
+        return { ...data, line: { ...r.line, color: ZoneColors[index] }, fill: (r.fill || 'none')}
       } else {
         return data
       }
@@ -75,6 +85,46 @@ const getZonesData = (rawData, linesCount) => {
   const allData = []
   zonesData.forEach( z => z.forEach(i => allData.push(i)))
   return allData
+}
+
+const parseGasSuperheatOccurrences = (superheatOccurrences, stages, fromTime, toTime, timeZone, x, y) => {
+  const start = moment.tz(fromTime, timeZone).unix()
+  const end = moment.tz(toTime, timeZone).unix()
+  const occurrences = SuperheatInterpolator.interpolate(superheatOccurrences, stages, start, end)
+  occurrences.forEach(r => {
+    x.push(parseTimeZone(r.occurredAt, timeZone))
+    y.push(r.temperature)
+  })
+}
+
+const processRelievingOccurrences = (relievingOccurrence, zone, timeZone, x, y) => {
+  const point = interpolateTempPoint(relievingOccurrence.occurredAt, zone.tempOccurrences)
+  x.push(parseTimeZone(point.occurredAt, timeZone))
+  y.push(point.temperature)
+}
+
+const interpolateTempPoint = (target, set) => {
+  const reversedSet = set.slice(0).reverse()
+  let leftPoint = _.find(reversedSet, occurrence => target >= occurrence.occurredAt)
+  if (!leftPoint) { leftPoint = _.extend(_.first(set), { occurredAt: target }) }
+  let rightPoint = _.find(set, occurrence => target <= occurrence.occurredAt)
+  if (!rightPoint) { rightPoint = _.extend(_.last(set), { occurredAt: target }) }
+  return interpolatePoints([leftPoint, rightPoint], target)
+}
+
+const interpolatePoints = (pair, time) => {
+  if (!pair[0]) { return pair[1] }
+
+  const tempDelta = pair[1].temperature - pair[0].temperature
+  const timeDelta = (time - pair[0].occurredAt)
+  const timeSpan = (pair[1].occurredAt - pair[0].occurredAt)
+
+  const scaledTemp =
+    tempDelta === 0
+      ? pair[0].temperature
+      : pair[0].temperature + (tempDelta * (timeDelta / timeSpan))
+
+  return { occurredAt: time, temperature: scaledTemp }
 }
 
 const getStagesData = (rawData, linesCount) => {
@@ -96,7 +146,7 @@ const getStagesData = (rawData, linesCount) => {
         }
       })
 
-      const data = plotlyData(dispName, x, y, yaxis, linesCount)
+      const data = plotlyData(dispName, x, y, yaxis, linesCount, s.legendgroup)
       plotlyStagesData.push({
         ...data,
         line: s.line,
@@ -112,13 +162,22 @@ const getAlertsData = (rawData) => {
  return convertToLocalTime(rawData.alarmOccurrences || [])
 }
 
-const plotlyData = (displayName, x, y, yaxis, lineNumber) => {
+const plotlyData = (displayName, x, y, yaxis, lineNumber, legendgroup = null, mode = 'lines', connectedGaps = true) => {
   return {
-    name: displayName,
+    name: `<b>${displayName}</b>`,
     offsetgroup: lineNumber,
+    legendgroup: legendgroup,
+    legendgrouptitle: {
+      text: `<b>${legendgroup}</b>`,
+      font: {
+        size: 14,
+        color: 'black',
+      }
+    },
     visible: true,
     type: "scatter",
-    mode: "lines",
+    connectgaps: connectedGaps,
+    mode: mode ? mode : 'lines',
     line: {},
     fill: "",
     marker: {},
@@ -131,9 +190,9 @@ const plotlyData = (displayName, x, y, yaxis, lineNumber) => {
 }
 
 
-const parseTimeZone = (timestamp, timeZone) => {
+const parseTimeZone = (timestamp, timeZone, addMilliseconds = 0) => {
   const t = moment.unix(timestamp).tz(timeZone)
-  return t.format('YYYY-MM-DDTHH:mm:ss.SSS')
+  return t.add(addMilliseconds, 'milliseconds').format('YYYY-MM-DDTHH:mm:ss.SSS')
 }
 
 const convertToLocalTime = (alerts) => {
@@ -147,7 +206,10 @@ const baseLayout = {
   font: {
     family: 'Lato',
   },
-  showlegend: false,
+  showlegend: true,
+  legend: {
+    orientation: 'h',
+  },
   hovermode: 'x',
   margin: {
     t: 0,
@@ -165,12 +227,10 @@ const baseLayout = {
     title: '°F | %',
     domain: [0.3, 1],
     anchor: 'x1',
-    range: [0, 150],
-    dtick: 30,
+    // range: [-20, 130],
+    // dtick: 30,
     fixedrange: true,
-    rangemode: 'nonnegative',
     zeroline: false,
-    constrain: 'range',
   },
   yaxis3: {
     side: 'right',
@@ -178,11 +238,9 @@ const baseLayout = {
     domain: [0.3, 1],
     overlaying: 'y2',
     anchor: 'x1',
-    range: [0, 1500],
-    dtick: 300,
     fixedrange: true,
-    rangemode: 'nonnegative',
-    constrain: 'range',
+    // range: [0, 1500],
+    // dtick: 300,
     scaleratio: 0.1,
     zeroline: false,
     scaleanchor: 'y2',
@@ -206,3 +264,15 @@ const baseLayout = {
   'xaxis.autorange': false,
   'yaxis.autorange': false,
 };
+
+const ZoneColors = [
+  'rgba(31, 114, 157, 1.0)', // dark blue (NOTE: must be the first color in the list)
+  'rgba(146, 192, 79, 1.0)', // light green
+  'rgba(252, 54, 180, 1.0)', // pink
+  'rgba(246, 162, 0, 1.0)', // orange
+  'rgba(0, 206, 155, 1.0)', // green
+  'rgba(205, 53, 41, 1.0)', // red
+  'rgba(165, 199, 216, 1.0)', // light blue
+  'rgba(159, 68, 155, 1.0)', // purple
+  'rgba(20, 115, 21, 1.0)' // dark green
+]

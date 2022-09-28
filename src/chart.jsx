@@ -9,10 +9,11 @@ import Plot from 'react-plotly.js'
 import { addOrUpdateAlerts } from './chartHelper'
 import DataTooltip from './Tooltip'
 import ReactTooltip from 'react-tooltip'
-import { RthRawData1 } from './Data/RthData.js'
+// import { RthRawData1 } from './Data/RthData.js'
+import { ZoneRthRawData } from './Data/ZoneRthRawData.js'
 import { getPlotlyDataAndLayout } from './Data/RthRawDataConverter'
 
-const { data, alerts, layout } = getPlotlyDataAndLayout(RthRawData1)
+const { data, alerts, layout } = getPlotlyDataAndLayout(ZoneRthRawData)
 
 const CHART_DIV_ID = 'rth-chart'
 const AlertsImagePaths = {

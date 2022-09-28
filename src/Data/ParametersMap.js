@@ -1,25 +1,23 @@
 const workingParameters = [
-  {
-    name: 'coilTempOccurrences',
-    dispName: 'coilTemp',
-    yaxis: 'y3',
-    parameterName: 'temperature'
-  }
+
 ]
 
 const outDoorUnit = [
   {
     name: 'odLiquidPressureOccurrences',
-    dispName: 'OD Liq pressure',
+    legendgroup: 'Outdoor Unit',
+    dispName: 'Liquid Pressure',
     yaxis: 'y3',
     parameterName: 'pressure',
     line: {
-      color: '#b94ec6'
+      color: '#b94ec6',
+      shape: 'hv'
     }
   },
   {
     name: 'odLiquidTempOccurrences',
-    dispName: 'OD Liq Temp',
+    legendgroup: 'Outdoor Unit',
+    dispName: 'Liquid Temp',
     yaxis: 'y2',
     parameterName: 'temperature',
     line: {
@@ -28,7 +26,8 @@ const outDoorUnit = [
   },
   {
     name: 'odSubcoolOccurrences',
-    dispName: 'OD Subcool Temp',
+    legendgroup: 'Outdoor Unit',
+    dispName: 'OD Subcool',
     yaxis: 'y2',
     parameterName: 'temperature',
     line: {
@@ -37,7 +36,8 @@ const outDoorUnit = [
   },
   {
     name: 'odSuctionPressureOccurrences',
-    dispName: 'OD Suction pressure',
+    legendgroup: 'Outdoor Unit',
+    dispName: 'Suction Pressure',
     yaxis: 'y3',
     parameterName: 'pressure',
     line: {
@@ -46,7 +46,8 @@ const outDoorUnit = [
   },
   {
     name: 'odSuctionTemperatureOccurrences',
-    dispName: 'OD Suction Temp',
+    legendgroup: 'Outdoor Unit',
+    dispName: 'Suction Temp',
     yaxis: 'y2',
     parameterName: 'temperature',
     line: {
@@ -55,7 +56,8 @@ const outDoorUnit = [
   },
   {
     name: 'odSuperheatOccurrences',
-    dispName: 'OD Superheat Temp',
+    legendgroup: 'Outdoor Unit',
+    dispName: 'OD Superheat',
     yaxis: 'y2',
     parameterName: 'temperature',
     line: {
@@ -64,6 +66,7 @@ const outDoorUnit = [
   },
   {
     name: 'outdoorTemps',
+    legendgroup: 'Outdoor',
     dispName: 'ODT',
     yaxis: 'y2',
     parameterName: 'temperature',
@@ -76,18 +79,54 @@ const outDoorUnit = [
 const indoorUnit = [
   {
     name: 'actualAirflowOccurrences',
-    dispName: 'airFlow',
+    dispName: 'Actual AirFlow',
+    legendgroup: 'Indoor Unit',
     yaxis: 'y3',
     parameterName: 'airflow',
     line: {
       color: '#c3ab1e',
-      dash: 'dot',
+      dash: 'dashdot',
       shape: 'hv'
     }
   },
   {
+    name: 'coilTempOccurrences',
+    legendgroup: 'Indoor Unit',
+    dispName: 'Evap/Liquid Temp',
+    yaxis: 'y3',
+    parameterName: 'temperature',
+    line: {
+      color: '#e16600',
+      dash: 'dashdot'
+    }
+  },
+  {
+    name: 'gasSuperheatOccurrences',
+    legendgroup: 'Indoor Unit',
+    dispName: 'ID Superheat',
+    yaxis: 'y2',
+    parameterName: 'temperature',
+    line: {
+      color: '#450000',
+      dash: 'longdashdot',
+    },
+    connectgaps: false,
+  },
+  {
+    name: 'gasTempOccurrences',
+    legendgroup: 'Indoor Unit',
+    dispName: 'Gas Temp',
+    yaxis: 'y2',
+    parameterName: 'temperature',
+    line: {
+      color: '#b62e00',
+      dash: 'longdashdot'
+    }
+  },
+  {
     name: 'indoorEevStepPositionOccurrences',
-    dispName: 'gas temp',
+    legendgroup: 'Indoor Unit',
+    dispName: 'ID EEV Steps',
     yaxis: 'y3',
     parameterName: 'value',
     line: {
@@ -97,7 +136,8 @@ const indoorUnit = [
   },
   {
     name: 'indoorReturnAirTempOccurrences',
-    dispName: 'ID return air temp',
+    legendgroup: 'Indoor Unit',
+    dispName: 'ID Return Air Temp',
     yaxis: 'y2',
     parameterName: 'temperature',
     line: {
@@ -106,7 +146,8 @@ const indoorUnit = [
   },
   {
     name: 'indoorSupplyAirTempOccurrences',
-    dispName: 'ID supply air temp',
+    legendgroup: 'Indoor Unit',
+    dispName: 'ID Supply Air Temp',
     yaxis: 'y2',
     parameterName: 'temperature',
     line: {
@@ -116,7 +157,7 @@ const indoorUnit = [
 ]
 
 export const Parameters = [
-  ...workingParameters,
+  // ...workingParameters,
   ...indoorUnit,
   ...outDoorUnit,
   // {
@@ -124,18 +165,6 @@ export const Parameters = [
   //   dispName: 'compressor capacity',
   //   yaxis: 'y2',
   //   parameterName: 'capacity'
-  // },
-  // {
-  //   name: 'gasSuperheatOccurrences',
-  //   dispName: 'gas superheat',
-  //   yaxis: 'y3',
-  //   parameterName: 'temperature'
-  // },
-  // {
-  //   name: 'gasTempOccurrences',
-  //   dispName: 'gas temp',
-  //   yaxis: 'y2',
-  //   parameterName: 'temperature'
   // },
   // {
   //   name: 'odCompressorActualSpeedOccurrences',
@@ -173,7 +202,8 @@ export const Parameters = [
 export const Stages = [
   {
     name: 'COMPRESSOR_COOLING_STAGE_1',
-    dispName: 'stage 1',
+    legendgroup: 'Stages',
+    dispName: 'Cooling Stage1',
     yaxis: 'y',
     parameterName: 'capacity',
     line: {
@@ -184,7 +214,8 @@ export const Stages = [
   },
   {
     name: 'COMPRESSOR_COOLING_STAGE_2',
-    dispName: 'stage 2',
+    legendgroup: 'Stages',
+    dispName: 'Cooling Stage2',
     yaxis: 'y',
     parameterName: 'capacity', // capacity
     line: {
@@ -198,11 +229,10 @@ export const Stages = [
 export const Zone = [
   {
     name: 'coolingSetpointOccurrences',
-    dispName: 'ICST',
+    dispName: 'Cooling Setpoint',
     yaxis: 'y2',
     parameterName: 'temperature',
     line: {
-      color: 'rgba(31, 114, 157, 1.0)',
       shape: 'hv',
       dash: 'dot',
       width: 1,
@@ -211,11 +241,10 @@ export const Zone = [
   },
   {
     name: 'heatingSetpointOccurrences',
-    dispName: 'IHST',
+    dispName: 'Heating Setpoint',
     yaxis: 'y2',
     parameterName: 'temperature',
     line: {
-      color: 'rgba(31, 114, 157, 1.0)',
       dash: 'dash',
       shape: 'hv',
       width: 1,
@@ -224,18 +253,29 @@ export const Zone = [
   },
   {
     name: 'tempOccurrences',
-    dispName: 'IT',
+    dispName: 'Temperature',
     yaxis: 'y2',
     parameterName: 'temperature',
     line: {
-      color: 'rgba(31, 114, 157, 1.0)',
     },
   },
   {
     name: 'humidityOccurrences',
-    dispName: 'IHT',
+    dispName: 'Relative Humidity',
     yaxis: 'y2',
-    parameterName: 'humidity'
+    parameterName: 'humidity',
+    line: {
+      dash: 'dashdot',
+    },
+  },
+  {
+    name: 'relievingOccurrences',
+    dispName: 'Relieving',
+    yaxis: 'y2',
+    mode: 'markers',
+    line: {
+      dash: 'dashdot',
+    },
   }
 ]
 
