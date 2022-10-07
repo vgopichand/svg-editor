@@ -160,43 +160,47 @@ export const Parameters = [
   // ...workingParameters,
   ...indoorUnit,
   ...outDoorUnit,
-  // {
-  //   name: 'compressorCapacityOccurrences',
-  //   dispName: 'compressor capacity',
-  //   yaxis: 'y2',
-  //   parameterName: 'capacity'
-  // },
-  // {
-  //   name: 'odCompressorActualSpeedOccurrences',
-  //   dispName: 'OD Compressor Capacity',
-  //   yaxis: 'y2',
-  //   parameterName: 'capacity'
-  // },
+  {
+    name: 'compressorCapacityOccurrences',
+    dispName: 'compressor capacity',
+    yaxis: 'y2',
+    parameterName: 'capacity'
+  },
+  {
+    name: 'odCompressorActualSpeedOccurrences',
+    dispName: 'OD Compressor Capacity',
+    yaxis: 'y2',
+    parameterName: 'capacity',
+    line: {
+      shape: 'hv',
+    },
+    fill: 'tozeroy',
+  },
 
-  // {
-  //   name: 'returnStaticPressureOccurrences',
-  //   dispName: 'ID return static Pressure',
-  //   yaxis: 'y3',
-  //   parameterName: 'pressure'
-  // },
-  // {
-  //   name: 'staticPressureOccurrences',
-  //   dispName: 'ID static Pressure',
-  //   yaxis: 'y3',
-  //   parameterName: 'pressure'
-  // },
-  // {
-  //   name: 'supplyStaticPressureOccurrences',
-  //   dispName: 'ID supply static Pressure',
-  //   yaxis: 'y2',
-  //   parameterName: 'pressure'
-  // },
-  // {
-  //   name: 'targetAirflowOccurrences',
-  //   dispName: 'ID Target Airflow',
-  //   yaxis: 'y3',
-  //   parameterName: 'airflow'
-  // }
+  {
+    name: 'returnStaticPressureOccurrences',
+    dispName: 'ID return static Pressure',
+    yaxis: 'y3',
+    parameterName: 'pressure'
+  },
+  {
+    name: 'staticPressureOccurrences',
+    dispName: 'ID static Pressure',
+    yaxis: 'y3',
+    parameterName: 'pressure'
+  },
+  {
+    name: 'supplyStaticPressureOccurrences',
+    dispName: 'ID supply static Pressure',
+    yaxis: 'y2',
+    parameterName: 'pressure'
+  },
+  {
+    name: 'targetAirflowOccurrences',
+    dispName: 'ID Target Airflow',
+    yaxis: 'y3',
+    parameterName: 'airflow'
+  }
 ]
 
 export const Stages = [
@@ -282,3 +286,112 @@ export const Zone = [
 export const Alerts = {
   name: 'alarmOccurrences',
 }
+////////////////////////////////////// INDIVIDUAL CHARTS PARAMETERS GROUPS /////////////////////////////////////////
+
+const ZoneTemperatures = {
+  name: 'Zone Temperatures',
+  parameters: [
+    {
+      name: 'coolingSetpointOccurrences',
+      dispName: 'Cooling Setpoint',
+      yaxis: 'y',
+      parameterName: 'temperature',
+      line: {
+        shape: 'hv',
+        dash: 'dot',
+        width: 1,
+      },
+      fill: 'none',
+    },
+    {
+      name: 'heatingSetpointOccurrences',
+      dispName: 'Heating Setpoint',
+      yaxis: 'y',
+      parameterName: 'temperature',
+      line: {
+        dash: 'dash',
+        shape: 'hv',
+        width: 1,
+      },
+      fill: 'none',
+    },
+    {
+      name: 'tempOccurrences',
+      dispName: 'Temperature',
+      yaxis: 'y',
+      parameterName: 'temperature',
+      line: {
+      },
+    },
+  ]
+}
+
+const CoolingAndHeatingStages = {
+  name: 'Stages',
+  parameters: [
+    {
+      name: 'COMPRESSOR_COOLING_STAGE_1',
+      legendgroup: 'Stages',
+      dispName: 'Cooling Stage1',
+      yaxis: 'y',
+      parameterName: 'capacity',
+      line: {
+        color: '#6BBEEA',
+        shape: 'hv'
+      },
+      fill: "tozeroy",
+    },
+    {
+      name: 'COMPRESSOR_COOLING_STAGE_2',
+      legendgroup: 'Stages',
+      dispName: 'Cooling Stage2',
+      yaxis: 'y',
+      parameterName: 'capacity', // capacity
+      line: {
+        color: '#1F729D',
+        shape: 'hv'
+      },
+      fill: "tozeroy",
+    }
+  ]
+}
+
+const CompressorActualSpeedAndODT = {
+  name: 'Compressor Speed and ODT',
+  parameters: [
+    {
+      name: 'outdoorTemps',
+      legendgroup: 'Outdoor',
+      dispName: 'ODT',
+      yaxis: 'y',
+      parameterName: 'temperature',
+      line: {
+        color: '#ffe300'
+      }
+    },
+    {
+      name: 'odCompressorActualSpeedOccurrences',
+      dispName: 'OD Compressor Capacity',
+      yaxis: 'y',
+      parameterName: 'capacity',
+      line: {
+        shape: 'hv'
+      },
+      fill: "tozeroy"
+    },
+  ]
+}
+
+// export const TotalCapacity = {
+//   name: 'Total Capacity'
+//   parameters: [
+
+//   ]
+// }
+
+
+export const ParametersGroup = [
+  ZoneTemperatures,
+  CoolingAndHeatingStages,
+  CompressorActualSpeedAndODT
+]

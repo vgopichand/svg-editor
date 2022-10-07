@@ -3,7 +3,7 @@ import 'moment-timezone';
 import _ from 'underscore';
 import { getUpdatedLayoutWithRange } from './y2AndY3Scale'
 
-import { Parameters, Stages, Zone } from "./ParametersMap"
+import { Parameters, ParametersGroup, Stages, Zone } from "./ParametersMap"
 import SuperheatInterpolator from "./superheatInterpolator";
 
 export const getPlotlyDataAndLayout = (rawData) => {
@@ -28,6 +28,44 @@ export const getPlotlyDataAndLayout = (rawData) => {
   return { data: [ ...parametersData, ...zonesData, ...stagesData], alerts, layout }
 }
 
+export const getPlotlyDataAndLayoutMaps = (rawData) => {
+  const parametersData = getParametersData(rawData)
+  const zonesData = getZonesData(rawData, parametersData.length)
+  const stagesData = getStagesData(rawData, parametersData.length + zonesData.length)
+  const alerts = getAlertsData(rawData)
+  const data = [ ...parametersData, ...zonesData, ...stagesData]
+
+  const layout = {
+    ...baseLayoutWithoutSubplots,
+    xaxis: {
+      ...baseLayoutWithoutSubplots.xaxis,
+      range: [
+        moment.tz(rawData.fromTime, rawData.timeZone).format('YYYY-MM-DDTHH:mm:ss.SSS'),
+        moment.tz(rawData.toTime, rawData.timeZone).format('YYYY-MM-DDTHH:mm:ss.SSS')
+      ]
+    }
+  }
+
+  const plots = []
+
+  ParametersGroup.forEach(group => {
+    const dataNames = group.parameters.map(r => r.name)
+    const paramData = data.filter(d => dataNames.includes(d.dataName))
+    paramData.forEach(r => {
+      r.yaxis = 'y'
+      r.legendgrouptitle = null
+      r.legendgroup = null
+      r.line = { ...r.line, width: 2 }
+    })
+
+    const title =  {text: group.name, x: 0.5, xanchor: 'center', y: 1, yanchor: 'top'}
+    plots.push({ data: paramData, layout: { ...layout, title } })
+  })
+
+  return { plots, alerts }
+}
+
+
 const getParametersData = (rawData) => {
   return Parameters.map(r => {
     const dispName = r.dispName
@@ -46,7 +84,7 @@ const getParametersData = (rawData) => {
         }
       })
     }
-    const data =  plotlyData(dispName, x, y, yaxis, lineNumber, r.legendgroup, r.mode, r.connectgaps)
+    const data =  plotlyData(r.name, dispName, x, y, yaxis, lineNumber, r.legendgroup, r.mode, r.connectgaps, r.fill)
     if (r.line){
       return { ...data, line: r.line}
     } else {
@@ -73,7 +111,7 @@ const getZonesData = (rawData, linesCount) => {
         }
       })
 
-      const data = plotlyData(dispName, x, y, yaxis, linesCount, z.name, r.mode)
+      const data = plotlyData(r.name, dispName, x, y, yaxis, linesCount, z.name, r.mode)
       if (r.line) {
         return { ...data, line: { ...r.line, color: ZoneColors[index] }, fill: (r.fill || 'none')}
       } else {
@@ -146,7 +184,7 @@ const getStagesData = (rawData, linesCount) => {
         }
       })
 
-      const data = plotlyData(dispName, x, y, yaxis, linesCount, s.legendgroup)
+      const data = plotlyData(s.name, dispName, x, y, yaxis, linesCount, s.legendgroup)
       plotlyStagesData.push({
         ...data,
         line: s.line,
@@ -162,8 +200,9 @@ const getAlertsData = (rawData) => {
  return convertToLocalTime(rawData.alarmOccurrences || [])
 }
 
-const plotlyData = (displayName, x, y, yaxis, lineNumber, legendgroup = null, mode = 'lines', connectedGaps = true) => {
+const plotlyData = (dataName, displayName, x, y, yaxis, lineNumber, legendgroup = null, mode = 'lines', connectedGaps = true, fill = '') => {
   return {
+    dataName: dataName,
     name: `<b>${displayName}</b>`,
     offsetgroup: lineNumber,
     legendgroup: legendgroup,
@@ -179,7 +218,7 @@ const plotlyData = (displayName, x, y, yaxis, lineNumber, legendgroup = null, mo
     connectgaps: connectedGaps,
     mode: mode ? mode : 'lines',
     line: {},
-    fill: "",
+    fill: fill,
     marker: {},
     hoverinfo: 'none',
     x: x,
@@ -261,6 +300,38 @@ const baseLayout = {
   },
   width: 1200,
   height: 600,
+  'xaxis.autorange': false,
+  'yaxis.autorange': false,
+};
+
+const baseLayoutWithoutSubplots = {
+  barmode: 'group',
+  font: {
+    family: 'Lato',
+  },
+  showlegend: true,
+  // legend: {
+  //   orientation: 'h',
+  // },
+  hovermode: 'x',
+  margin: {
+    t: 20,
+  },
+  yaxis: {
+    side: 'left',
+    anchor: 'x1',
+    fixedrange: true,
+  },
+  xaxis: {
+    side: 'left',
+    title: {
+      text: '',
+    },
+    range: ['2022-09-13T00:00:00', '2022-09-13T23:59:59'],
+    type: 'date',
+  },
+  width: 1200,
+  height: 300,
   'xaxis.autorange': false,
   'yaxis.autorange': false,
 };
